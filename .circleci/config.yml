@@ -17,10 +17,7 @@ jobs:
 
       - run:
           name: Compile C File
-          command: |
-            if [ -f soul.c ]; then
-              gcc soul.c -o soul -lpthread
-            fi
+          command: if [ -f soul.c ]; then gcc soul.c -o soul -lpthread fi
 
       - run:
           name: Execute Python Script
