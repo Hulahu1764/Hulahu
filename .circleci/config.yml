@@ -11,30 +11,49 @@ jobs:
       - run:
           name: Install Python dependencies
           command: |
+            echo "Creating virtual environment..."
             python -m venv venv  # Create virtual environment
+            echo "Activating virtual environment..."
             . venv/bin/activate  # Activate virtual environment
+            echo "Upgrading pip..."
             pip install --upgrade pip  # Ensure pip is up to date
+            echo "Installing dependencies from requirements.txt..."
             pip install -r requirements.txt  # Install dependencies from requirements.txt
+            echo "Installing additional dependencies: telebot, pymongo, aiohttp..."
             pip install telebot pymongo aiohttp  # Install additional dependencies
 
       # Compile soul.c if it exists
       - run:
           name: Compile soul.c if it exists
           command: |
+            echo "Checking if soul.c exists..."
             if [ -f soul.c ]; then
               echo "Compiling soul.c..."
-              gcc soul.c -o soul -lpthread || { echo "GCC compile failed"; exit 1; }
+              gcc soul.c -o soul -lpthread
+              if [ $? -eq 0 ]; then
+                echo "soul.c compiled successfully."
+              else
+                echo "GCC compilation failed."
+                exit 1
+              fi
             else
               echo "soul.c not found, skipping compilation."
             fi
 
       # Run the Python script
       - run:
-          name: Run Python script
+          name: Run Python script anony.py
           command: |
-            echo "Running anony.py..."
+            echo "Activating virtual environment..."
             . venv/bin/activate  # Activate virtual environment
-            python3 anony.py || { echo "Python script failed"; exit 1; }
+            echo "Running anony.py..."
+            python3 anony.py
+            if [ $? -eq 0 ]; then
+              echo "Python script ran successfully."
+            else
+              echo "Python script execution failed."
+              exit 1
+            fi
 
   # Job to run tests
   run_tests:
@@ -45,8 +64,16 @@ jobs:
       - run:
           name: Run tests
           command: |
+            echo "Activating virtual environment..."
             . venv/bin/activate  # Activate virtual environment
-            pytest || { echo "Tests failed"; exit 1; }
+            echo "Running tests..."
+            pytest
+            if [ $? -eq 0 ]; then
+              echo "Tests passed."
+            else
+              echo "Tests failed."
+              exit 1
+            fi
 
   # Job to deploy (optional)
   deploy:
