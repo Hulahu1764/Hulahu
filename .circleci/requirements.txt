@@ -1,0 +1,16 @@
+# Web framework
+flask==2.3.3
+
+# HTTP requests
+requests==2.31.0
+
+# Data manipulation and analysis
+numpy==1.24.3
+pandas==2.1.1
+
+# Database connectors
+sqlalchemy==2.0.21
+psycopg2-binary==2.9.8
+
+# Other utilities
+beautifulsoup4==4.12.2
