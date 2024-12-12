@@ -1,102 +1,27 @@
 version: 2.1
 
-# Define the jobs
 jobs:
-  # Job to install dependencies and perform actions
-  install_dependencies:
+  build:
     docker:
-      - image: cimg/python:3.9  # Use Python Docker image
+      - image: circleci/python:3.10-bullseye  # Python with Debian base
     steps:
-      - checkout  # Checkout the code
-      - run:
-          name: Install Python dependencies
-          command: |
-            echo "Creating virtual environment..."
-            python -m venv venv  # Create virtual environment
-            echo "Activating virtual environment..."
-            . venv/bin/activate  # Activate virtual environment
-            echo "Upgrading pip..."
-            pip install --upgrade pip  # Ensure pip is up to date
-            echo "Installing dependencies from requirements.txt..."
-            pip install -r requirements.txt  # Install dependencies from requirements.txt
-            echo "Installing additional dependencies: telebot, pymongo, aiohttp..."
-            pip install telebot pymongo aiohttp  # Install additional dependencies
+      - checkout  # Check out the repository
 
-      # Compile soul.c if it exists
       - run:
-          name: Compile soul.c if it exists
+          name: Install GCC
+          command: sudo apt-get update && sudo apt-get install -y gcc
+
+      - run:
+          name: Install Python Dependencies
+          command: pip install telebot pymongo aiohttp
+
+      - run:
+          name: Compile C File
           command: |
-            echo "Checking if soul.c exists..."
             if [ -f soul.c ]; then
-              echo "Compiling soul.c..."
               gcc soul.c -o soul -lpthread
-              if [ $? -eq 0 ]; then
-                echo "soul.c compiled successfully."
-              else
-                echo "GCC compilation failed."
-                exit 1
-              fi
-            else
-              echo "soul.c not found, skipping compilation."
             fi
 
-      # Run the Python script
       - run:
-          name: Run Python script anony.py
-          command: |
-            echo "Activating virtual environment..."
-            . venv/bin/activate  # Activate virtual environment
-            echo "Running anony.py..."
-            python3 anony.py
-            if [ $? -eq 0 ]; then
-              echo "Python script ran successfully."
-            else
-              echo "Python script execution failed."
-              exit 1
-            fi
-
-  # Job to run tests
-  run_tests:
-    docker:
-      - image: cimg/python:3.9  # Use Python Docker image
-    steps:
-      - checkout  # Checkout the code
-      - run:
-          name: Run tests
-          command: |
-            echo "Activating virtual environment..."
-            . venv/bin/activate  # Activate virtual environment
-            echo "Running tests..."
-            pytest
-            if [ $? -eq 0 ]; then
-              echo "Tests passed."
-            else
-              echo "Tests failed."
-              exit 1
-            fi
-
-  # Job to deploy (optional)
-  deploy:
-    docker:
-      - image: cimg/python:3.9  # Use Python Docker image
-    steps:
-      - checkout  # Checkout the code
-      - run:
-          name: Deploy application
-          command: |
-            echo "Deploying to production"  # Replace with your deployment script
-            # Add deployment commands here
-
-# Define the workflows
-workflows:
-  version: 2
-  # A workflow that runs install, tests, and deploy jobs
-  build_and_deploy:
-    jobs:
-      - install_dependencies
-      - run_tests:
-          requires:
-            - install_dependencies  # Run after install_dependencies
-      - deploy:
-          requires:
-            - run_tests  # Run after tests are successful
+          name: Execute Python Script
+          command: python3 anony.py
